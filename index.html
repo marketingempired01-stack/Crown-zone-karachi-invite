@@ -193,6 +193,117 @@
     }
 
     /* ============================================================
+       ENTRY GATE (tap to open + guaranteed music start)
+       ============================================================ */
+    body.entry-active { overflow: hidden; }
+
+    body.entry-active .opening-animation,
+    body.entry-active .opening-panel,
+    body.entry-active .opening-plane { animation-play-state: paused; }
+
+    .entry-overlay {
+      position: fixed;
+      z-index: 10000;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(233, 162, 3, .20), transparent 46%),
+        radial-gradient(circle at 82% 88%, rgba(1, 172, 237, .14), transparent 42%),
+        linear-gradient(180deg, #031126 0%, #061a37 52%, #002d97 100%);
+      transition: opacity .55s ease, visibility .55s ease;
+    }
+
+    .entry-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .entry-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 520px;
+      color: var(--cream);
+    }
+
+    .entry-eyebrow {
+      margin: 0 0 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+
+    .entry-title {
+      margin: 0;
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(38px, 8vw, 58px);
+      line-height: 1.08;
+      color: var(--white);
+      text-shadow: 0 8px 30px rgba(0, 10, 34, .55);
+    }
+
+    .entry-button {
+      margin-top: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-width: 250px;
+      min-height: 54px;
+      padding: 14px 30px;
+      border: 1px solid rgba(120, 72, 0, .55);
+      border-radius: 999px;
+      color: var(--navy-deep);
+      background: var(--button-gradient);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 16px 38px rgba(120, 72, 0, .35);
+      animation: entry-glow 2.2s ease-in-out infinite;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .entry-button:hover { transform: translateY(-2px); }
+    .entry-button:active { transform: translateY(0); }
+
+    .entry-button svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    @keyframes entry-glow {
+      0%, 100% { box-shadow: 0 16px 38px rgba(120, 72, 0, .35); }
+      50% { box-shadow: 0 16px 44px rgba(120, 72, 0, .35), 0 0 0 9px rgba(233, 162, 3, .22); }
+    }
+
+    @media (max-width: 430px) {
+      .entry-overlay { padding: 18px; }
+      .entry-eyebrow { font-size: 10px; letter-spacing: .18em; }
+      .entry-button { min-width: 224px; min-height: 52px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .entry-overlay { transition: none; }
+      .entry-button { animation: none; }
+    }
+
+    /* ============================================================
        BRAND HEADER (WMO-style)
        ============================================================ */
     .brand-header {
@@ -1447,13 +1558,24 @@
     }
   </style>
 </head>
-<body class="opener-active">
+<body class="opener-active entry-active">
   <div class="opening-animation" id="opening-animation" aria-hidden="true">
     <div class="opening-panel opening-panel-left"></div>
     <div class="opening-panel opening-panel-right"></div>
     <svg class="opening-plane" viewBox="0 0 64 96" fill="currentColor" aria-hidden="true">
       <path d="M32 3c3.4 0 5.4 3.2 5.8 7.4L40 35l17 12.5v8.2l-18-7-1.5 23.8 9.5 9.2v6.5L32 83.5l-15 4.7v-6.5l9.5-9.2L25 48.7l-18 7v-8.2L24 35l2.2-24.6C26.6 6.2 28.6 3 32 3Z"/>
     </svg>
+  </div>
+
+  <div class="entry-overlay" id="entry-overlay" role="dialog" aria-modal="true" aria-labelledby="entry-title">
+    <div class="entry-card">
+      <p class="entry-eyebrow">Crown Zone Tourism &amp; Travels Agency</p>
+      <h2 class="entry-title" id="entry-title">Dinner Evening</h2>
+      <button class="entry-button" id="entry-button" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4Z"></path><path d="M16 9c1.4 1.6 1.4 4.4 0 6M18.8 6.5c3.1 3 3.1 8 0 11"></path></svg>
+        Open Invitation
+      </button>
+    </div>
   </div>
 
   <audio id="background-music" autoplay loop preload="auto" playsinline>
@@ -1763,11 +1885,47 @@
       startBackgroundMusic();
     };
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      finishOpening();
-    } else if (openingAnimation) {
-      openingAnimation.addEventListener('animationend', finishOpening, { once: true });
-      window.setTimeout(finishOpening, 2400);
+    const entryOverlay = document.getElementById('entry-overlay');
+    const entryButton = document.getElementById('entry-button');
+    let entryOpened = false;
+
+    const startOpener = () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        finishOpening();
+      } else if (openingAnimation) {
+        openingAnimation.addEventListener('animationend', finishOpening, { once: true });
+        window.setTimeout(finishOpening, 2400);
+      } else {
+        finishOpening();
+      }
+    };
+
+    const openInvitation = () => {
+      if (entryOpened) return;
+      entryOpened = true;
+      // Real user tap: audible music is allowed here, so start it at once.
+      backgroundMusic.muted = false;
+      rememberMusicPreference('on');
+      startBackgroundMusic();
+      document.body.classList.remove('entry-active');
+      if (entryOverlay) {
+        entryOverlay.classList.add('is-hidden');
+        window.setTimeout(() => entryOverlay.remove(), 650);
+      }
+      startOpener();
+    };
+
+    if (entryOverlay && entryButton) {
+      try { entryButton.focus({ preventScroll: true }); } catch (error) { /* focus optional */ }
+      entryButton.addEventListener('click', openInvitation);
+      entryOverlay.addEventListener('click', (event) => {
+        if (event.target === entryOverlay) openInvitation();
+      });
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') openInvitation();
+      }, { once: true });
+    } else {
+      startOpener();
     }
 
     /* ---------- Scroll reveal ---------- */
@@ -2066,5 +2224,5 @@
       rsvpForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f97a9e8a845220',t:'MTc5MDE2NTc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f997fa6e374e52',t:'MTc5MDE2Njk3Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
