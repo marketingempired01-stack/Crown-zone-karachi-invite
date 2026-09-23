@@ -970,6 +970,15 @@
 
     .music-toggle:active { transform: translateY(0); }
 
+    .music-toggle.is-starting {
+      animation: music-pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes music-pulse {
+      0%, 100% { box-shadow: 0 10px 28px rgba(1, 10, 24, .28); }
+      50% { box-shadow: 0 10px 28px rgba(1, 10, 24, .28), 0 0 0 7px rgba(233, 162, 3, .28); }
+    }
+
     .music-toggle svg {
       width: 18px;
       height: 18px;
@@ -1447,11 +1456,11 @@
     </svg>
   </div>
 
-  <audio id="background-music" autoplay loop preload="metadata" playsinline>
+  <audio id="background-music" autoplay loop preload="auto" playsinline>
     <source src="./mickeyscat-moment-of-peace.mp3" type="audio/mpeg" />
   </audio>
 
-  <button class="music-toggle" id="music-toggle" type="button" aria-label="Mute background music" aria-pressed="true">
+  <button class="music-toggle is-starting" id="music-toggle" type="button" aria-label="Mute background music" aria-pressed="true">
     <svg class="music-icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4Z"></path><path d="M16 9c1.4 1.6 1.4 4.4 0 6M18.8 6.5c3.1 3 3.1 8 0 11"></path></svg>
     <svg class="music-icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4Z"></path><path d="m17 10 5 5M22 10l-5 5"></path></svg>
     <span id="music-state">Mute Music</span>
@@ -1648,29 +1657,27 @@
   </footer>
 
   <script>
-    /* ---------- Background music ---------- */
+    /* ---------- Background music (auto-play on open) ---------- */
     const backgroundMusic = document.getElementById('background-music');
     const musicToggle = document.getElementById('music-toggle');
     const musicState = document.getElementById('music-state');
     let musicPreference = 'on';
 
-    backgroundMusic.volume = .28;
+    backgroundMusic.volume = .42;
     backgroundMusic.muted = false;
 
     const syncMusicControl = () => {
-      const isOff = backgroundMusic.paused || backgroundMusic.muted;
-      musicToggle.classList.toggle('is-muted', isOff);
-      if (backgroundMusic.paused) {
-        musicState.textContent = 'Play Music';
-        musicToggle.setAttribute('aria-label', 'Play background music');
-      } else if (backgroundMusic.muted) {
+      // Button is strictly mute/unmute; icon follows the real mute state only.
+      const isMuted = backgroundMusic.muted;
+      musicToggle.classList.toggle('is-muted', isMuted);
+      if (isMuted) {
         musicState.textContent = 'Unmute';
         musicToggle.setAttribute('aria-label', 'Unmute background music');
       } else {
         musicState.textContent = 'Mute Music';
         musicToggle.setAttribute('aria-label', 'Mute background music');
       }
-      musicToggle.setAttribute('aria-pressed', String(!isOff));
+      musicToggle.setAttribute('aria-pressed', String(!isMuted));
     };
 
     const rememberMusicPreference = (value) => {
@@ -1679,37 +1686,74 @@
     };
 
     const startBackgroundMusic = () => {
-      if (musicPreference === 'off') {
-        syncMusicControl();
-        return;
-      }
+      if (musicPreference === 'off') return;
       backgroundMusic.muted = false;
-      const playAttempt = backgroundMusic.play();
-      if (playAttempt) playAttempt.then(syncMusicControl).catch(syncMusicControl);
+      try {
+        const playAttempt = backgroundMusic.play();
+        if (playAttempt) playAttempt.then(syncMusicControl).catch(() => syncMusicControl());
+      } catch (error) { /* retry loop below keeps trying */ }
+      syncMusicControl();
     };
 
-    musicToggle.addEventListener('click', async () => {
-      if (backgroundMusic.paused) {
+    musicToggle.addEventListener('click', () => {
+      if (backgroundMusic.muted) {
         backgroundMusic.muted = false;
         rememberMusicPreference('on');
-        try { await backgroundMusic.play(); } catch (error) { /* next user action can retry */ }
+        startBackgroundMusic();
       } else {
-        backgroundMusic.muted = !backgroundMusic.muted;
-        rememberMusicPreference(backgroundMusic.muted ? 'off' : 'on');
+        // Keep playing silently so unmute resumes instantly.
+        backgroundMusic.muted = true;
+        rememberMusicPreference('off');
+        syncMusicControl();
       }
-      syncMusicControl();
     });
 
     backgroundMusic.addEventListener('play', syncMusicControl);
     backgroundMusic.addEventListener('pause', syncMusicControl);
     backgroundMusic.addEventListener('volumechange', syncMusicControl);
+
+    backgroundMusic.addEventListener('playing', () => {
+      musicToggle.classList.remove('is-starting');
+      syncMusicControl();
+    });
+    backgroundMusic.addEventListener('error', () => {
+      if (backgroundMusic.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        musicToggle.classList.remove('is-starting');
+        musicState.textContent = 'Music Unavailable';
+        musicToggle.setAttribute('aria-label', 'Background music file unavailable');
+      }
+    }, true);
+
+    // Auto-play the moment the file opens + aggressive retries until audible.
+    syncMusicControl();
+    startBackgroundMusic();
+    backgroundMusic.addEventListener('canplay', startBackgroundMusic, { once: true });
+    backgroundMusic.addEventListener('loadeddata', startBackgroundMusic, { once: true });
+    window.addEventListener('load', startBackgroundMusic);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) startBackgroundMusic();
+    });
+    let autoplayTries = 0;
+    const autoplayRetry = window.setInterval(() => {
+      autoplayTries += 1;
+      if (!backgroundMusic.paused || autoplayTries > 40) {
+        window.clearInterval(autoplayRetry);
+        return;
+      }
+      startBackgroundMusic();
+    }, 500);
+    backgroundMusic.load();
+
+    // Silent safety net only: if a browser blocked auto-play, the first
+    // tap/click/keypress anywhere starts the music by itself.
     const unlockMusic = (event) => {
       if (event.target && event.target.closest && event.target.closest('#music-toggle')) return;
       startBackgroundMusic();
     };
-    window.addEventListener('pointerdown', unlockMusic, { once: true });
-    window.addEventListener('keydown', unlockMusic, { once: true });
-    window.addEventListener('touchstart', unlockMusic, { once: true, passive: true });
+    window.addEventListener('pointerdown', unlockMusic, { capture: true });
+    window.addEventListener('click', unlockMusic, { capture: true });
+    window.addEventListener('keydown', unlockMusic, { capture: true });
+    window.addEventListener('touchstart', unlockMusic, { passive: true, capture: true });
 
     /* ---------- Airplane zipper opener ---------- */
     const openingAnimation = document.getElementById('opening-animation');
@@ -2022,5 +2066,5 @@
       rsvpForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f9603ffb653839',t:'MTc5MDE2NDY4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f97a9e8a845220',t:'MTc5MDE2NTc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
