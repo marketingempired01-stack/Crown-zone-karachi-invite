@@ -555,24 +555,14 @@
     }
 
     .event-card {
-      --stub-w: 128px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) var(--stub-w);
+      grid-template-columns: minmax(0, 1fr);
       width: min(100%, 700px);
       border-radius: 18px;
       overflow: hidden;
       color: var(--ink);
       background: var(--cream);
       box-shadow: 0 24px 70px rgba(1, 10, 24, .4);
-      /* ticket notches at the perforation */
-      -webkit-mask-image:
-        radial-gradient(circle 13px at calc(100% - var(--stub-w)) -2px, transparent 13px, #000 13.5px),
-        radial-gradient(circle 13px at calc(100% - var(--stub-w)) calc(100% + 2px), transparent 13px, #000 13.5px);
-      -webkit-mask-composite: source-in;
-      mask-image:
-        radial-gradient(circle 13px at calc(100% - var(--stub-w)) -2px, transparent 13px, #000 13.5px),
-        radial-gradient(circle 13px at calc(100% - var(--stub-w)) calc(100% + 2px), transparent 13px, #000 13.5px);
-      mask-composite: intersect;
     }
 
     .event-card::before {
@@ -586,44 +576,6 @@
     .card-body {
       padding: 28px 32px 26px;
       text-align: center;
-      border-right: 2px dashed rgba(18, 36, 65, .22);
-    }
-
-    /* perforation stub */
-    .card-stub {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 13px;
-      padding: 18px 10px;
-      background: var(--cream-2);
-    }
-
-    .card-stub svg { width: 32px; height: 32px; color: var(--blue-deep); }
-
-    .stub-label {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .32em;
-      text-transform: uppercase;
-      color: var(--blue-deep);
-    }
-
-    .stub-barcode {
-      width: 62px;
-      height: 24px;
-      background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 5px, var(--ink) 5px 8px, transparent 8px 10px);
-      opacity: .7;
-    }
-
-    .stub-code {
-      font-size: 9.5px;
-      font-weight: 700;
-      letter-spacing: .18em;
-      color: var(--muted);
     }
 
     .card-topline {
@@ -1377,13 +1329,10 @@
     }
 
     @media (max-width: 560px) {
-      /* Boarding pass becomes a stacked ticket instead of squeezing its side stub. */
+      /* Ticket card stacks to a single column on small phones. */
       .event-card {
-        --stub-w: 100%;
         grid-template-columns: minmax(0, 1fr);
         border-radius: 16px;
-        -webkit-mask-image: none;
-        mask-image: none;
       }
 
       .event-card::before { grid-column: 1; }
@@ -1391,7 +1340,6 @@
       .card-body {
         padding: 24px 20px 22px;
         border-right: 0;
-        border-bottom: 2px dashed rgba(18, 36, 65, .22);
       }
 
       .card-topline {
@@ -1442,41 +1390,7 @@
         font-size: 13.5px;
       }
 
-      .card-stub {
-        min-width: 0;
-        flex-direction: row;
-        justify-content: center;
-        gap: clamp(10px, 4vw, 22px);
-        padding: 14px 15px;
-        text-align: center;
-      }
-
-      .card-stub svg {
-        width: 24px;
-        height: 24px;
-        flex: 0 0 24px;
-      }
-
-      .stub-label {
-        writing-mode: horizontal-tb;
-        transform: none;
-        font-size: 9px;
-        letter-spacing: .17em;
-        white-space: nowrap;
-      }
-
-      .stub-barcode {
-        width: 46px;
-        height: 20px;
-        flex: 0 0 46px;
-      }
-
-      .stub-code {
-        font-size: 8px;
-        letter-spacing: .1em;
-        white-space: nowrap;
-      }
-    }
+          }
 
     @media (max-width: 430px) {
       .container { width: min(100% - 24px, 1180px); }
@@ -1560,14 +1474,6 @@
       .date-block .day,
       .date-block .month { font-size: 9px; letter-spacing: .08em; }
       .date-block .date-number { font-size: 43px; }
-
-      .card-stub {
-        padding-inline: 11px;
-        gap: 6px;
-      }
-
-      .card-stub svg { display: none; }
-      .stub-barcode { width: 40px; flex-basis: 40px; }
 
       .section-kicker { letter-spacing: .22em; }
       .field > label { letter-spacing: .13em; }
@@ -1701,12 +1607,7 @@
               </div>
               <p class="card-foot">We look forward to welcoming you.</p>
             </div>
-            <div class="card-stub" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.5 21 4l-6 8.5 2.5 7L13 16l-4.5 4-1-5.5L3 13.5Z"></path></svg>
-              <span class="stub-label">Dinner Pass</span>
-              <span class="stub-barcode"></span>
-              <span class="stub-code">KHI · 03 OCT</span>
-            </div>
+
           </div>
         </div>
       </div>
@@ -1718,9 +1619,9 @@
     <section class="light-section" aria-labelledby="rsvp-title">
       <div class="container">
         <div class="section-heading" data-reveal>
-          <span class="section-kicker">Your place awaits</span>
+          <span class="section-kicker">Kindly RSVP</span>
           <h2 id="rsvp-title">Please confirm your <em>attendance.</em></h2>
-          <p>Share the required details below so we can welcome you properly.</p>
+          <p>Please provide your details below.</p>
           <p class="rsvp-note">We look forward to welcoming you.</p>
         </div>
       </div>
@@ -2274,5 +2175,5 @@
       rsvpForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f9e03799b8b7dc',t:'MTc5MDE2OTkzMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40ff7ad1c1da813',t:'MTc5MDQwMTU3OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
