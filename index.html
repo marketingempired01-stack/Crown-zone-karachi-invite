@@ -925,7 +925,6 @@
       box-shadow: 0 0 0 3px rgba(0, 45, 151, .14);
     }
 
-    .hero-actions .button-primary,
     .form-submit {
       width: min(100%, 280px);
     }
@@ -1405,11 +1404,11 @@
       .hero-actions {
         width: 100%;
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
       }
 
       .button { width: 100%; }
-      .hero-actions .button-primary,
+      .hero-actions .button { width: auto; }
       .form-submit { width: 100%; }
 
       .light-section { padding: 60px 0 56px; }
@@ -1556,7 +1555,7 @@
           <h1 id="event-title" class="load-reveal" style="--delay:.26s">A Special <em>Dinner Evening</em></h1>
           <p class="hero-intro load-reveal" style="--delay:.44s">Join us for a special evening where conversations begin, connections grow and memories are made.</p>
           <div class="hero-actions load-reveal" style="--delay:.62s">
-            <a class="button button-primary" href="#rsvp">Confirm attendance <span aria-hidden="true">→</span></a>
+            <a class="button button-primary" href="#rsvp">Join us <span aria-hidden="true">→</span></a>
             
           </div>
         </div>
@@ -2002,10 +2001,11 @@
       ctx.lineTo(1145, 350);
       ctx.stroke();
 
+      const guestLabel = String(passData.guests).trim() === '1' ? 'GUEST' : 'GUESTS';
       const info = [
         ['DATE', 'SATURDAY, 3 OCTOBER 2026'],
         ['TIME', '8:00 PM'],
-        ['GUESTS', passData.guests],
+        [guestLabel, passData.guests],
       ];
       const columns = [95, 505, 905];
       info.forEach(([label, value], index) => {
@@ -2021,7 +2021,7 @@
       ctx.font = '700 13px Montserrat, Arial, sans-serif';
       ctx.fillText('VENUE', 95, 505);
       ctx.fillStyle = ink;
-      const venueAddress = '31/3, Hussaini Housing Society, Main University Road, Near National Medical College, Karachi, 75300';
+      const venueAddress = '31/3, Hussaini Housing Society, Main University Road, Near National College, Karachi, 75300';
       const venueSize = fitCanvasText(ctx, venueAddress, 1050, 20, 'Montserrat, Arial, sans-serif', '600', 14);
       ctx.font = `600 ${venueSize}px Montserrat, Arial, sans-serif`;
       ctx.fillText(venueAddress, 95, 542);
@@ -2047,7 +2047,6 @@
       ctx.textAlign = 'center';
       ctx.fillStyle = white;
       ctx.font = '800 15px Montserrat, Arial, sans-serif';
-      ctx.fillText('ADMIT', 1368, 108);
       drawPlane(ctx, 1368, 182, .85, white);
       ctx.font = '600 38px "Playfair Display", Georgia, serif';
       ctx.fillText('Dinner Pass', 1368, 270);
@@ -2056,7 +2055,7 @@
       ctx.font = '700 15px Montserrat, Arial, sans-serif';
       ctx.fillText('03 OCT 2026 · 8:00 PM', 1368, 368);
       ctx.font = '700 15px Montserrat, Arial, sans-serif';
-      ctx.fillText(`GUESTS  ${passData.guests}`, 1368, 416);
+      ctx.fillText(`${guestLabel}  ${passData.guests}`, 1368, 416);
 
       // Deterministic decorative barcode based on ticket ID.
       let barcodeX = 1242;
@@ -2148,5 +2147,5 @@
       rsvpForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a41055818a977eb3',t:'MTc5MDQwNTQyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
