@@ -578,21 +578,6 @@
       text-align: center;
     }
 
-    .card-topline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 20px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .3em;
-      text-transform: uppercase;
-      color: var(--blue-deep);
-    }
-
-    .card-topline svg { width: 16px; height: 16px; vertical-align: -3px; }
-
     .card-title {
       margin: 0 0 20px;
       font-family: var(--serif);
@@ -1342,15 +1327,6 @@
         border-right: 0;
       }
 
-      .card-topline {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px 18px;
-        margin-bottom: 17px;
-        font-size: 9px;
-        letter-spacing: .18em;
-      }
-
       .card-title {
         margin-bottom: 18px;
         font-size: clamp(21px, 6.4vw, 25px);
@@ -1589,10 +1565,7 @@
           <!-- EDIT: boarding-pass ticket -->
           <div class="event-card load-reveal" style="--delay:.36s" aria-label="Event date and time ticket">
             <div class="card-body">
-              <div class="card-topline">
-                <span>Save the date</span>
-                <span><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.5 21 4l-6 8.5 2.5 7L13 16l-4.5 4-1-5.5L3 13.5Z"></path></svg> Admit Guests</span>
-              </div>
+
               <h2 class="card-title">A Special Dinner Evening</h2>
               <!-- EDIT: DATE -->
               <div class="date-block">
@@ -1603,7 +1576,7 @@
               <!-- EDIT: TIME + HOST -->
               <div class="card-meta">
                 <div class="card-meta-item"><small>Time</small><strong>8:00 PM</strong></div>
-                <div class="card-meta-item"><small>Host</small><strong>Crown Zone Tourism</strong></div>
+                <div class="card-meta-item"><small>Hosted By</small><strong>Crown Zone Tourism</strong></div>
               </div>
               <p class="card-foot">We look forward to welcoming you.</p>
             </div>
@@ -2175,5 +2148,5 @@
       rsvpForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40ff7ad1c1da813',t:'MTc5MDQwMTU3OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
